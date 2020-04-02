@@ -12,8 +12,13 @@ import View from '@vkontakte/vkui/dist/components/View/View';
 import ScreenSpinner from '@vkontakte/vkui/dist/components/ScreenSpinner/ScreenSpinner';
 import '@vkontakte/vkui/dist/vkui.css';
 import './Game.css'
+import { platform, IOS } from '@vkontakte/vkui';
 import { Alert } from '@vkontakte/vkui'
-import axios from 'axios';;
+import axios from 'axios';
+import PanelHeaderButton from '@vkontakte/vkui/dist/components/PanelHeaderButton/PanelHeaderButton';
+import Icon28ChevronBack from '@vkontakte/icons/dist/28/chevron_back';
+import Icon24Back from '@vkontakte/icons/dist/24/back';
+const osName = platform();
 
 let URL0 = "https://api.duels.asimple.ru/tasks/math/0";
 let URL1 = "https://api.duels.asimple.ru/tasks/math/1";
@@ -22,7 +27,6 @@ class Timer extends React.Component {
         super(props)
         this.count = this.count.bind(this)
         this.state = {
-            minutes: 0,
             secounds: 0,
             word:"aaaaaaaaaaaaaaaaaaaaaaaaaaaa",
             popout: null
@@ -42,23 +46,22 @@ class Timer extends React.Component {
             onClose={this.closePopout}>
             <p>Время закончилось.</p>
             <p>Вы набрали {this.amount} очков;</p>
-            </Alert>, seconds:0, minutes:0, word:wordnow
+            </Alert>, seconds:0, word:wordnow
         });
     }
     closePopout = () => {
         let wordnow = this.state.word;
-        this.setState({ popout: null, seconds:0, minutes:0, word:wordnow});
+        this.setState({ popout: null, seconds:0, word:wordnow});
     }
     count() {        
         var now = new Date().getTime();
         var t = 10000 - (now - this.start);
-        var minutes = Math.floor((t % (1000 * 60 * 60)) / (1000 * 60));
         var seconds = Math.floor((t % (1000 * 60)) / 1000);
         let wordnow = this.state.word;
         let popout = this.state.popout;
-        this.setState({popout, minutes, seconds, wordnow})
+        this.setState({popout, seconds, wordnow})
         if (t < 0) {
-            this.setState({popout, seconds:0, minutes:0, word:wordnow})
+            this.setState({popout, seconds:0, word:wordnow})
             clearInterval(this.x);
             this.openPopout()
         }
@@ -73,7 +76,7 @@ class Timer extends React.Component {
             this.amount -= 1;
         }
         axios.get(URL1).then(res => {
-            this.setState({minutes:this.state.minutes, seconds:this.state.seconds, word:res.data.task})
+            this.setState({seconds:this.state.seconds, word:res.data.task})
         })
     }
 
@@ -82,35 +85,35 @@ class Timer extends React.Component {
             this.setState({word: res.data.task})
         })
         this.start = new Date().getTime();
-        this.x = setInterval(this.count, 50);
+        this.x = setInterval(this.count, 10);
     }
 
     render() {
-        const {minutes, seconds, word, popout} = this.state
+        const {seconds, word, popout} = this.state
         return ( 
-            <View activePanel={'game'} popout={popout}>
-            <h1>У вас осталось : </h1>
-            <div id="clockdiv">
             <div>
-                <span className="minutes" id="minute">{minutes}</span>
-                <div className="smalltext">Минут</div>
-                
-            </div>
+            {popout}
+            <h1 align="center">У вас осталось : </h1>
             <div>
-                <span className="seconds" id="second">{seconds}</span>
-                <div className="smalltext">Секунд</div>
+                <h2 align="center" class="seconds">{seconds}</h2>
             </div>
+            <p align="center"><strong>{word}</strong></p>
+            <p><input type="submit" class="right" onClick={this.nextWord.bind(this)} value={"Отгадано"}/></p>
+            <p><input type="submit" class="wrong" onClick={this.nextWord.bind(this)} value={"Пропустить"}/></p>
             </div>
-            <p>{word}</p>
-            <p><input type="submit" onClick={this.nextWord.bind(this)} value={"Отгадано"}/></p>
-            <p><input type="submit" onClick={this.nextWord.bind(this)} value={"Пропустить"}/></p>
-            </View>
         )
     }
 }
 
 const Game = ({ id, go, fetchedUser }) => (
-    <Timer/>
+    <Panel id={id}>
+        <PanelHeader
+			left={<PanelHeaderButton onClick={go} data-to="home">
+				{osName === IOS ? <Icon28ChevronBack/> : <Icon24Back/>}
+			</PanelHeaderButton>}
+		>Игра</PanelHeader>
+        <Timer/>
+    </Panel>
 );
 
 Game.propTypes = {
