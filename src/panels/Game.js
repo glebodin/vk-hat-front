@@ -20,87 +20,98 @@ import Icon28ChevronBack from '@vkontakte/icons/dist/28/chevron_back';
 import Icon24Back from '@vkontakte/icons/dist/24/back';
 const osName = platform();
 
-let URL0 = "https://api.duels.asimple.ru/tasks/math/0";
-let URL1 = "https://api.duels.asimple.ru/tasks/math/1";
-class Timer extends React.Component {
+let URL = "https://api.hat.asimple.ru/words/";
+
+class Hat extends React.Component {
     constructor(props) {
         super(props)
         this.count = this.count.bind(this)
         this.state = {
-            secounds: 0,
-            word:"aaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-            popout: null
+            page: "",
+            seconds: 0,
+            word:"aaaaaaaaaaaaaaaaaaaaaaaaaaaa"
         }
         this.amount = 0
         this.start = null
     }
-    openPopout = () => {
-        let wordnow = this.state.word;
-        this.setState({ popout:
-            <Alert
-            actions={[{
-                title: 'Ок.',
-                autoclose: true,
-                style: 'destructive'
-            }]}
-            onClose={this.closePopout}>
-            <p>Время закончилось.</p>
-            <p>Вы набрали {this.amount} очков;</p>
-            </Alert>, seconds:0, word:wordnow
-        });
+
+    get = (a) => {
+        if (a == 0 || (a >= 5 && a <= 20)) {
+            return " очков";
+        }
+        else if (a % 10 == 1) {
+            return " очко";
+        }
+        else if (a % 10 < 5) {
+            return " очка";
+        }
     }
-    closePopout = () => {
+
+    finishGame = () => {
         let wordnow = this.state.word;
-        this.setState({ popout: null, seconds:0, word:wordnow});
+        this.setState({page:<div><p class="end"> Игра окончена<br/> <span class="result">Ваше количество очков: </span><br/><span class="seconds">{this.amount}</span></p><input type="submit" class="right" onClick={this.nextWord.bind(this)} value={"Новая игра"}/>
+            <p><input type="submit" class="repost" onClick={this.nextWord.bind(this)} value={"Поделиться"}/></p>
+</div>, seconds:0, word:wordnow});
     }
+    
+    share = () => {
+        bridge.send("VKWebAppShowWallPostBox", {"message": "Я с друзьями набрал " + this.amount + this.get(this.amount) + " в \"Шляпе\"! Попробуй и ты поиграть в шляпу с помощью этого приложения!"});
+    }
+
     count() {        
         var now = new Date().getTime();
-        var t = 10000 - (now - this.start);
+        var t = 30000 - (now - this.start);
         var seconds = Math.floor((t % (1000 * 60)) / 1000);
         let wordnow = this.state.word;
-        let popout = this.state.popout;
-        this.setState({popout, seconds, wordnow})
+        let page = <div>
+            <h1 align="center">У вас осталось : </h1>
+            <div>
+                <h2 align="center" class="seconds">{this.state.seconds}</h2>
+            </div>
+            <p align="center" class="word"><strong>{this.state.word}</strong><br/>
+            <input type="submit" class="right" onClick={this.nextWord.bind(this)} value={"Отгадано"}/>
+            <br/><input type="submit" class="wrong" onClick={this.nextWord.bind(this)} value={"Пропустить"}/></p>
+            </div>;
+        this.setState({page, seconds, wordnow})
         if (t < 0) {
-            this.setState({popout, seconds:0, word:wordnow})
+            this.setState({page, seconds:0, word:wordnow})
             clearInterval(this.x);
-            this.openPopout()
+            this.finishGame();
         }
     }
 
     nextWord(e){
         console.log(e.target.value);
-        if (e.target.value == "Отгадано") {
+        if (e.target.value == "Поделиться") {
+            this.share();
+        }
+        if (e.target.value == "Новая игра") {
+            this.start = new Date().getTime();
+            this.amount = 0;
+            this.x = setInterval(this.count, 10);
+        }
+        else if (e.target.value == "Отгадано") {
             this.amount += 2;
         }
         else {
             this.amount -= 1;
         }
-        axios.get(URL1).then(res => {
-            this.setState({seconds:this.state.seconds, word:res.data.task})
+        axios.get(URL + this.props.userid).then(res => {
+            this.setState({page:this.state.all, seconds:this.state.seconds, word:res.data.word})
         })
     }
 
     componentDidMount() {
-        axios.get(URL0).then(res => {
-            this.setState({word: res.data.task})
+        axios.get(URL + this.props.userid).then(res => {
+            this.setState({word: res.data.word})
         })
         this.start = new Date().getTime();
         this.x = setInterval(this.count, 10);
     }
 
     render() {
-        const {seconds, word, popout} = this.state
         return ( 
-            <div>
-            {popout}
-            <h1 align="center">У вас осталось : </h1>
-            <div>
-                <h2 align="center" class="seconds">{seconds}</h2>
-            </div>
-            <p align="center"><strong>{word}</strong></p>
-            <p><input type="submit" class="right" onClick={this.nextWord.bind(this)} value={"Отгадано"}/></p>
-            <p><input type="submit" class="wrong" onClick={this.nextWord.bind(this)} value={"Пропустить"}/></p>
-            </div>
+            <div> {this.state.page} </div>
         )
     }
 }
@@ -111,8 +122,8 @@ const Game = ({ id, go, fetchedUser }) => (
 			left={<PanelHeaderButton onClick={go} data-to="home">
 				{osName === IOS ? <Icon28ChevronBack/> : <Icon24Back/>}
 			</PanelHeaderButton>}
-		>Игра</PanelHeader>
-        <Timer/>
+		>Шляпа</PanelHeader>
+        <Hat userid={fetchedUser.id}/>
     </Panel>
 );
 
@@ -126,6 +137,7 @@ Game.propTypes = {
 		city: PropTypes.shape({
 			title: PropTypes.string,
 		}),
+        id: PropTypes.number
 	}),
 };
 

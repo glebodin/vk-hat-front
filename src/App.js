@@ -25,6 +25,7 @@ const App = () => {
 		});
 		async function fetchData() {
 			const user = await bridge.send('VKWebAppGetUserInfo');
+            console.log(user);
 			setUser(user);
 			setPopout(null);
 		}
@@ -32,7 +33,7 @@ const App = () => {
 	}, []);
     
 	const go = e => {
-		setActivePanel(e.currentTarget.dataset.to);
+        setActivePanel(e.currentTarget.dataset.to);
 	};
     
 	return (

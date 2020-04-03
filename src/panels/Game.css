@@ -6,12 +6,52 @@
     font-weight: bold;
 }
 
+.end{
+    text-align: center;
+    font-size: 35px;
+    color: black;
+    font-family: Geneva, Arial, Helvetica, sans-serif;
+    font-weight: bold;
+}
+
+.word{
+    text-align: center;
+    font-size: 35px;
+    color: black;
+    font-family: Geneva, Arial, Helvetica, sans-serif;
+    font-weight: bold;
+}
+
+
+.result{
+    text-align: center;
+    font-size: 25px;
+    color: black;
+    font-family: Geneva, Arial, Helvetica, sans-serif;
+    font-weight: bold;
+}
+
+
 .right {
     height: 48px;
     width: 95%;
     font-size: 20px;
     line-height: 48px;
     background-color: #70C1B3;
+    color:white;
+    border-radius: 50px;
+    padding: 0;
+    margin: 35px 0 40px;
+    display: block;
+    margin: 0 auto;
+}
+
+.repost {
+    height: 48px;
+    width: 80%;
+    font-size: 20px;
+    line-height: 48px;
+    background-color: blue;
     color:white;
     border-radius: 50px;
     padding: 0;
