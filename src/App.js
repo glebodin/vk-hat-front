@@ -4,7 +4,6 @@ import View from '@vkontakte/vkui/dist/components/View/View';
 import ScreenSpinner from '@vkontakte/vkui/dist/components/ScreenSpinner/ScreenSpinner';
 import '@vkontakte/vkui/dist/vkui.css';
 import { platform, IOS } from '@vkontakte/vkui';
-import Game from './panels/Game';
 import Home from './panels/Home';
 import Rules from './panels/Rules';
 
@@ -13,7 +12,7 @@ const osName = platform();
 const App = () => {
 	const [activePanel, setActivePanel] = useState('home');
 	const [fetchedUser, setUser] = useState(null);
-	const [popout, setPopout] = useState(<ScreenSpinner size='large' />);
+	const [popout, setPopout] = useState(null);/*<ScreenSpinner size='large' />);
 
 	useEffect(() => {
 		bridge.subscribe(({ detail: { type, data }}) => {
@@ -30,7 +29,7 @@ const App = () => {
 			setPopout(null);
 		}
 		fetchData();
-	}, []);
+	}, []);*/
     
 	const go = e => {
         setActivePanel(e.currentTarget.dataset.to);
@@ -39,7 +38,6 @@ const App = () => {
 	return (
 		<View activePanel={activePanel} popout={popout}>
 			<Home id='home' fetchedUser={fetchedUser} go={go} />
-			<Game id='game' fetchedUser={fetchedUser} go={go} />
             <Rules id='rules' fetchedUser={fetchedUser} go={go} />
 		</View>
 	);
