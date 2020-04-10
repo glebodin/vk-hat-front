@@ -32,7 +32,8 @@ class Hat extends React.Component {
             <p><input type="submit" class="repost" onClick={this.props.go} data-to="rules" value={"Правила"}/></p>
 </div>,
             seconds: 0,
-            word:"Вау, вы уже сыграли все слова из нашего списка"
+            word:"Вау, вы уже сыграли все слова из нашего списка",
+            id: 0
         }
         this.amount = 0
         this.start = null
@@ -58,7 +59,10 @@ class Hat extends React.Component {
     }
     
     share = () => {
-        bridge.send("VKWebAppShowWallPostBox", {"message": "Я с друзьями набрал " + this.amount + this.get(this.amount) + " в \"Шляпе\"! Попробуй и ты поиграть в шляпу с помощью этого приложения!"});
+        console.log(1);
+        bridge.send("VKWebAppShowWallPostBox", {"message": "Я с друзьями набрал " + this.amount + this.get(this.amount) + " в \"Шляпе\"! Попробуй и ты поиграть в шляпу с помощью https://vk.com/app7386374!"}).then(res => {
+            this.setState({page:<div><p class="end"> Игра окончена<br/> <span class="result">ВАШ РЕЗУЛЬТАТ</span><br/><span class="amount">{this.amount} {this.get(this.amount)}</span></p><input type="submit" class="right" onClick={this.nextWord.bind(this)} value={"Новая игра"}/> </div>, word:"why"})
+            console.log(res)});
     }
 
     count() {        
@@ -86,8 +90,9 @@ class Hat extends React.Component {
         console.log(e.target.value);
         if (e.target.value == "Поделиться") {
             this.share();
+            return;
         }
-        if (e.target.value == "Новая игра") {
+        else if (e.target.value == "Новая игра") {
             this.start = new Date().getTime();
             this.amount = 0;
             this.x = setInterval(this.count, 1);
@@ -98,20 +103,23 @@ class Hat extends React.Component {
         else {
             this.amount -= 1;
         }
-        axios.get(URL + this.props.userid).then(res => {
+        axios.get(URL + this.state.id).then(res => {
             this.setState({page:this.state.all, seconds:this.state.seconds, word:res.data.word})
         })
     }
 
     componentDidMount() {
-        axios.get(URL + this.props.userid).then(res => {
+        bridge.send("VKWebAppGetUserInfo", {}).then(e => {this.setState({id: e.id})});
+        axios.get(URL + this.state.id).then(res => {
             this.setState({word: res.data.word})
         })
     }
 
     render() {
         return ( 
-            <div> {this.state.page} </div>
+            <div> 
+                {this.state.page} 
+            </div>
         )
     }
 }
@@ -123,7 +131,7 @@ const Home = ({ id, go, fetchedUser }) => (
 				{Icon28ErrorOutline}
 			</PanelHeaderButton>}
 		>Шляпа</PanelHeader>
-        <Hat userid={1} go={go}/>
+        <Hat go={go}/>
     </Panel>
 );
 
@@ -136,8 +144,7 @@ Home.propTypes = {
 		last_name: PropTypes.string,
 		city: PropTypes.shape({
 			title: PropTypes.string,
-		}),
-        id: PropTypes.number
+		})
 	}),
 };
 
